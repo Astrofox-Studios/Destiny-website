@@ -1,373 +1,247 @@
-document.addEventListener('DOMContentLoaded', function () {
-    // DOM elements
-    const ramSlider = document.getElementById('ram-slider');
-    const storageSlider = document.getElementById('storage-slider');
-    const ramValue = document.getElementById('ram-value');
-    const storageValue = document.getElementById('storage-value');
-    const cpuButtons = document.querySelectorAll('.cpu-button');
-    const totalPrice = document.getElementById('total-price');
-    const dropdownItems = document.querySelectorAll('#currency-dropdown .dropdown-menu li');
-    const dropdownToggle = document.querySelector('#currency-dropdown .dropdown-toggle');
-    const pricingCards = document.querySelectorAll('.pricing-card .price');
-    const popup = document.getElementById('orderPopup');
-    const closeBtn = document.querySelector('#orderPopup .close-btn');
-    const popupTitle = document.getElementById('popupTitle');
-    const popupSubtitle = document.getElementById('popupSubtitle');
-    const configureButton = document.getElementById('configureButton');
-    const contactButton = document.getElementById('contact-button');
-    const contactPopup = document.getElementById('contactPopup');
-    const contactCloseBtn = contactPopup.querySelector('.close-btn');
-    const customOrderPopup = document.getElementById('customOrderPopup');
-    const customOrderCloseBtn = customOrderPopup.querySelector('.close-btn');
-    const choosePlanBtn = document.querySelector('#configurator .btn');
-    const discordTicketBtn = document.getElementById('discordTicketBtn');
-    const userDetailsPopup = document.getElementById('userDetailsPopup');
-    const userDetailsCloseBtn = userDetailsPopup.querySelector('.close-btn');
-
-    // Variables
-    let selectedCPU = 1;
-    let currentCurrency = 'USD';
-    let exchangeRates = {};
-
-    // Fetch exchange rates including the new currencies
-    const fetchexchangeRates = async () => {
-        try {
-            const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-            const data = await response.json();
-            exchangeRates = {
-                USD: 1,
-                GBP: data.rates.GBP,
-                JPY: data.rates.JPY,
-                EUR: data.rates.EUR,
-                CAD: data.rates.CAD,
-                MXN: data.rates.MXN,
-                NZD: data.rates.NZD,
-                CHF: data.rates.CHF,
-                AUD: data.rates.AUD
-            };
-        } catch (error) {
-            console.error('Error fetching exchange rates:', error);
-            // Fallback rates
-            exchangeRates = {
-                USD: 1,
-                GBP: 0.80,
-                JPY: 110,
-                EUR: 0.85,
-                CAD: 1.25,
-                MXN: 20.00,
-                NZD: 1.40,
-                CHF: 0.92,
-                AUD: 1.30
-            };
-        }
-    };
-
-    // Update currency and prices
-    const updateCurrency = (currency) => {
-        currentCurrency = currency;
-        const selectedText = Array.from(dropdownItems).find(item => item.getAttribute('data-currency') === currency).textContent;
-        dropdownToggle.textContent = selectedText;
-
-        pricingCards.forEach(card => {
-            const usdPrice = parseFloat(card.getAttribute('data-usd-price'));
-            const newPrice = usdPrice * (exchangeRates[currency] || 1);
-            card.textContent = new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: currency
-            }).format(newPrice) + '/mo';
-        });
-
-        calculatePrice();
-    };
-
-    // Calculate total price
-    const calculatePrice = () => {
-        const ram = parseInt(ramSlider.value);
-        const storage = parseInt(storageSlider.value);
-        const cpu = selectedCPU;
-
-        let cpuCharge = 0;
-        if (cpu === 2) cpuCharge = 5;
-        if (cpu === 3) cpuCharge = 10;
-
-        let price = ram * 1.25 + (storage - 25) / 25 + cpuCharge;
-        price *= exchangeRates[currentCurrency] || 1;
-
-        totalPrice.textContent = new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: currentCurrency,
-            minimumFractionDigits: 2
-        }).format(price) + '/month';
-    };
-
-    // Event Listeners
-    dropdownItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const selectedCurrency = item.getAttribute('data-currency');
-            updateCurrency(selectedCurrency);
-        });
-    });
-
-    ramSlider.addEventListener('input', () => {
-        ramValue.textContent = ramSlider.value;
-        calculatePrice();
-    });
-
-    storageSlider.addEventListener('input', () => {
-        storageValue.textContent = storageSlider.value;
-        calculatePrice();
-    });
-
-    cpuButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            cpuButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            selectedCPU = parseInt(button.getAttribute('data-cpu'));
-            calculatePrice();
-        });
-    });
-
-    closeBtn.addEventListener('click', () => {
-        popup.style.display = 'none';
-    });
-
-    configureButton.addEventListener('click', () => {
-        popup.style.display = 'none';
-    });
-
-    choosePlanBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        customOrderPopup.style.display = 'flex';
-    });
-
-    customOrderCloseBtn.addEventListener('click', () => {
-        customOrderPopup.style.display = 'none';
-    });
-
-    discordTicketBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        customOrderPopup.style.display = 'none';
-        userDetailsPopup.style.display = 'flex';
-    });
-
-    userDetailsCloseBtn.addEventListener('click', () => {
-        userDetailsPopup.style.display = 'none';
-    });
-
-    // Initial setup
-    fetchexchangeRates();
-    calculatePrice();
-});
-const imageItems = document.querySelectorAll('.image-item');
-const fullscreenOverlay = document.querySelector('.fullscreen-overlay');
-const fullscreenImage = document.querySelector('.fullscreen-image');
-const closeButton = document.querySelector('.close-button');
-
-imageItems.forEach(item => {
-    item.addEventListener('click', () => {
-        const imgSrc = item.querySelector('img').src;
-        fullscreenImage.src = imgSrc;
-        fullscreenOverlay.style.display = 'flex';
-    });
-});
-
-closeButton.addEventListener('click', () => {
-    fullscreenOverlay.style.display = 'none';
-});
-
-fullscreenOverlay.addEventListener('click', (e) => {
-    if (e.target === fullscreenOverlay) {
-        fullscreenOverlay.style.display = 'none';
-    }
-});
-document.addEventListener('click', (e) => {
-    if (window.innerWidth <= 768 && !e.target.closest('nav') && !e.target.closest('.nav-links')) {
-        navLinks.classList.remove('active');
-        menuIcon.classList.remove('active');
-    }
-});
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
+    // Mobile Menu Toggle
     const menuIcon = document.querySelector('.menu-icon');
     const navLinks = document.querySelector('.nav-links');
 
-    menuIcon.addEventListener('click', function () {
-        navLinks.classList.toggle('active');
-    });
-});
+    if (menuIcon && navLinks) {
+        // Toggle menu when menu icon is clicked
+        menuIcon.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            menuIcon.classList.toggle('active');
+        });
 
-const navItems = document.querySelectorAll('.nav-links a');
-navItems.forEach(item => {
-    item.addEventListener('click', () => {
-        if (window.innerWidth <= 768) {
-            toggleMenu();
+        // Close menu when a nav item is clicked on mobile
+        const navItems = document.querySelectorAll('.nav-links a');
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    navLinks.classList.remove('active');
+                    menuIcon.classList.remove('active');
+                }
+            });
+        });
+
+        // Close menu if clicking outside nav on mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768 && 
+                !e.target.closest('nav') && 
+                !e.target.closest('.menu-icon')) {
+                navLinks.classList.remove('active');
+                menuIcon.classList.remove('active');
+            }
+        });
+    }
+
+    // FAQ Dropdown Functionality
+    const faqItems = document.querySelectorAll('.faq-item');
+    
+    faqItems.forEach(item => {
+        const question = item.querySelector('h3');
+        const answer = item.querySelector('.faq-answer');
+        
+        if (question && answer) {
+            question.addEventListener('click', () => {
+                // Close all other open answers first
+                faqItems.forEach(otherItem => {
+                    if (otherItem !== item) {
+                        const otherAnswer = otherItem.querySelector('.faq-answer');
+                        if (otherAnswer) {
+                            otherAnswer.classList.remove('active');
+                        }
+                    }
+                });
+                
+                // Toggle the current answer
+                answer.classList.toggle('active');
+            });
         }
     });
 });
-const menuIcon = document.querySelector('.menu-icon');
-const navLinks = document.querySelector('.nav-links');
-
-function toggleMenu() {
-    navLinks.classList.toggle('active');
-    menuIcon.classList.toggle('active');
-}
-
 
 document.addEventListener('DOMContentLoaded', () => {
-    const locationPoints = document.querySelectorAll('.location-point');
+    const explanationCarousel = document.querySelector('.explanation-carousel');
+    const slides = explanationCarousel.querySelectorAll('.explanation-slide');
+    const prevButton = explanationCarousel.querySelector('.prev-slide');
+    const nextButton = explanationCarousel.querySelector('.next-slide');
+    const progressBar = explanationCarousel.querySelector('.progress-bar');
 
-    locationPoints.forEach(point => {
-        point.addEventListener('focus', () => {
-            const info = point.querySelector('.location-info');
-            if (info) info.style.display = 'block';
+    let currentSlide = 0;
+    const totalSlides = slides.length;
+    let autoSlideInterval;
+    const slideDuration = 5000; // 5 seconds per slide
+
+    function showSlide(index) {
+        // Remove active class from all slides
+        slides.forEach(slide => {
+            slide.classList.remove('active');
         });
 
-        point.addEventListener('blur', () => {
-            const info = point.querySelector('.location-info');
-            if (info) info.style.display = 'none';
-        });
+        // Add active class to current slide
+        slides[index].classList.add('active');
+
+        // Update progress bar based on slide position
+        const progressPercentage = (currentSlide / (totalSlides - 1)) * 100;
+        progressBar.style.width = `${progressPercentage}%`;
+    }
+
+    function nextSlide() {
+        currentSlide = (currentSlide + 1) % totalSlides;
+        showSlide(currentSlide);
+        startAutoSlide();
+    }
+
+    function prevSlide() {
+        currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+        showSlide(currentSlide);
+        startAutoSlide();
+    }
+
+    function startAutoSlide() {
+        // Clear any existing interval
+        clearInterval(autoSlideInterval);
+
+        // Start new auto-slide interval
+        autoSlideInterval = setInterval(nextSlide, slideDuration);
+    }
+
+    // Add event listeners to navigation buttons
+    nextButton.addEventListener('click', () => {
+        nextSlide();
     });
+
+    prevButton.addEventListener('click', () => {
+        prevSlide();
+    });
+
+    // Initialize the first slide and progress bar
+    showSlide(currentSlide);
+
+    // Start auto-sliding
+    startAutoSlide();
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    const track = document.querySelector('.carousel-track');
-    const prevButton = document.querySelector('.carousel-prev');
-    const nextButton = document.querySelector('.carousel-next');
-    const cards = document.querySelectorAll('.review-card');
+    const gamesCarousel = document.querySelector('.games-carousel');
+    const gamesInner = document.querySelector('.games-inner');
+    const prevBtn = document.querySelector('.games-prev-btn');
+    const nextBtn = document.querySelector('.games-next-btn');
+    const gameCards = document.querySelectorAll('.game-card');
 
     let currentIndex = 0;
+    const totalCards = gameCards.length - 1;
 
-    const updateCarousel = () => {
-        const cardWidth = cards[0].getBoundingClientRect().width;
-        track.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
-    };
+    // Function to get visible cards based on screen width
+    function getVisibleCards() {
+        const screenWidth = window.innerWidth;
+        if (screenWidth <= 768) return 1;  // Mobile
+        if (screenWidth <= 1024) return 2; // Tablet
+        return 3; // Desktop
+    }
 
-    nextButton.addEventListener('click', () => {
-        if (currentIndex < cards.length - 1) {
+    function updateCarousel() {
+        const visibleCards = getVisibleCards();
+        const cardWidth = gameCards[0].offsetWidth + 20; // card width + margin
+        gamesInner.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
+    }
+
+    nextBtn.addEventListener('click', () => {
+        const visibleCards = getVisibleCards();
+        if (currentIndex < totalCards - visibleCards) {
             currentIndex++;
             updateCarousel();
         }
     });
 
-    prevButton.addEventListener('click', () => {
+    prevBtn.addEventListener('click', () => {
         if (currentIndex > 0) {
             currentIndex--;
             updateCarousel();
         }
     });
 
-    window.addEventListener('resize', updateCarousel);
-});
-
-const updateAllPlanPrices = () => {
-    const activeTier = document.querySelector(".tier-button.active").dataset.tier;
-    loadPlans(activeTier);
-};
-
-
-
-function toggleAnswer(id) {
-    const answer = document.getElementById(id);
-    const allAnswers = document.querySelectorAll('.faq-answer');
-
-    allAnswers.forEach(item => {
-        if (item !== answer && item.classList.contains('active')) {
-            item.classList.remove('active');
-        }
-    });
-
-    answer.classList.toggle('active');
-}
-const faqItems = document.querySelectorAll('.faq-item');
-faqItems.forEach(item => {
-    const question = item.querySelector('h3');
-    question.addEventListener('click', () => {
-        item.querySelector('.faq-answer').classList.toggle('active');
-        faqItems.forEach(otherItem => {
-            if (otherItem !== item) {
-                otherItem.querySelector('.faq-answer').classList.remove('active');
-            }
-        });
-    });
-});
-
-const teams = {
-    'red-raccoons': [
-        { username: "Player1" },
-        { username: "Player2" },
-        { username: "Player3" },
-        { username: "TBA", isTBA: true }
-    ],
-    'orange-otters': [
-        { username: "Player1" },
-        { username: "Player2" },
-        { username: "Player3" },
-        { username: "Player4" },
-        { username: "Player5" }
-    ]
-};
-
-document.addEventListener('DOMContentLoaded', () => {
-    function renderPlayers(teamId, players) {
-        const teamList = document.getElementById(teamId);
-        if (!teamList) {
-            console.error(`No element found with ID ${teamId}`);
-            return;
-        }
-        teamList.innerHTML = ""; // Clear any existing content
-        console.log(`Rendering players for ${teamId}`); // Debug log
-
-        players.forEach(player => {
-            const li = document.createElement("li");
-            li.className = "player-item";
-            
-            const playerHeadUrl = player.isTBA 
-                ? "https://minotar.net/avatar/MHF_Question/32.png" // Question mark head for TBA
-                : `https://minotar.net/avatar/${player.username}/32.png`; // Player's head
-
-            li.innerHTML = `
-                <img src="${playerHeadUrl}" alt="${player.username}" class="player-head">
-                <span class="player-name">${player.isTBA ? "TBA" : player.username}</span>
-            `;
-
-            teamList.appendChild(li);
-        });
+    // Initial setup and responsive handling
+    function setupCarousel() {
+        updateCarousel();
     }
 
-    // Initialize player lists for all teams
-    for (const teamId in teams) {
-        renderPlayers(teamId, teams[teamId]);
-    }
-})
+    // Initial setup
+    setupCarousel();
+
+    // Responsive adjustments
+    window.addEventListener('resize', setupCarousel);
+});
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    const carousel = document.querySelector('.carousel');
-    let isDown = false;
-    let startX;
-    let scrollLeft;
+    const teamsData = {
+        "red-raccoons": Array(5).fill({
+            name: "TBA",
+            avatar: "/images/teams/red.png",
+            link: ""
+        }),
+        "orange-otters": Array(5).fill({
+            name: "TBA",
+            avatar: "/images/teams/orange.png",
+            link: ""
+        }),
+        "fire-foxes": Array(5).fill({
+            name: "TBA",
+            avatar: "/images/teams/yellow.png",
+            link: ""
+        }),
+        "green-goats": Array(5).fill({
+            name: "TBA",
+            avatar: "/images/teams/green.png",
+            link: ""
+        }),
+        "cyan-crabs": Array(5).fill({
+            name: "TBA",
+            avatar: "/images/teams/cyan.png",
+            link: ""
+        }),
+        "blue-belugas": Array(5).fill({
+            name: "TBA",
+            avatar: "/images/teams/blue.png",
+            link: ""
+        }),
+        "purple-puffins": Array(5).fill({
+            name: "TBA",
+            avatar: "/images/teams/purple.png",
+            link: ""
+        }),
+        "pink-panthers": Array(5).fill({
+            name: "TBA",
+            avatar: "/images/teams/pink.png",
+            link: ""
+        })
+    };
 
-    carousel.addEventListener('mousedown', (e) => {
-        isDown = true;
-        carousel.classList.add('active');
-        startX = e.pageX - carousel.offsetLeft;
-        scrollLeft = carousel.scrollLeft;
-    });
+    function populateTeams() {
+        for (const [teamId, players] of Object.entries(teamsData)) {
+            const teamList = document.getElementById(teamId);
+            if (!teamList) continue;
 
-    carousel.addEventListener('mouseleave', () => {
-        isDown = false;
-        carousel.classList.remove('active');
-    });
+            teamList.innerHTML = ""; // Clear existing content
 
-    carousel.addEventListener('mouseup', () => {
-        isDown = false;
-        carousel.classList.remove('active');
-    });
+            players.forEach(player => {
+                const playerElement = document.createElement('li');
+                playerElement.classList.add('player');
 
-    carousel.addEventListener('mousemove', (e) => {
-        if (!isDown) return;
-        e.preventDefault();
-        const x = e.pageX - carousel.offsetLeft;
-        const walk = (x - startX) * 2; // Adjust scroll speed
-        carousel.scrollLeft = scrollLeft - walk;
-    });
+                const avatar = document.createElement('img');
+                avatar.src = player.avatar;
+                avatar.alt = `${player.name}'s Avatar`;
+                avatar.classList.add('player-head');
+
+                const playerName = document.createElement('span');
+                playerName.textContent = player.name;
+                playerName.classList.add('player-name');
+
+                playerElement.appendChild(avatar);
+                playerElement.appendChild(playerName);
+                teamList.appendChild(playerElement);
+            });
+        }
+    }
+
+    populateTeams();
 });

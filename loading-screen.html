@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Loading</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #811ef3;
+            --secondary-color: #639aff;
+            --background-color: #1a1a2e;
+            --background-light: #292961;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(135deg, var(--background-color), var(--background-light));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: 'Ubuntu', sans-serif;
+        }
+
+
+        .loading-container {
+            text-align: center;
+            position: relative;
+            background: #ffffff00;
+        }
+
+        .logo {
+            width: 30rem;
+            height: 30rem;
+            background: url('/images/NEWFULLLOGO.png') no-repeat center;
+            background-size: contain;
+            margin: 1rem;
+            opacity: 0;
+            animation: popIn 0.8s forwards;
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 1.5rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeIn 0.8s 0.4s forwards;
+        }
+
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            margin: 1rem auto;
+            animation: spin 1s linear infinite, fadeIn 0.8s 0.6s forwards;
+            opacity: 0;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes popIn {
+            0% { 
+                transform: scale(0.5); 
+                opacity: 0;
+            }
+            80% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+            100% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .grid-background {
+            position: absolute;
+            top: 2rem;
+            left: 3rem;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(6, 1fr);
+            pointer-events: none;
+        }
+
+        .background-diamond {
+            width: auto;
+            height: auto;
+            border-radius: 1rem;
+            background-color: rgba(255, 255, 255, 0.199);
+            transform: rotate(45deg);
+            animation: rotate-diamond 10s linear infinite;
+        }
+
+        @keyframes rotate-diamond {
+            0% { transform: rotate(45deg); }
+            100% { transform: rotate(405deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-background">
+        <script>
+            const grid = document.querySelector('.grid-background');
+            for (let i = 0; i < 60; i++) {
+                const diamond = document.createElement('div');
+                diamond.classList.add('background-diamond');
+                grid.appendChild(diamond);
+            }
+        </script>
+    </div>
+
+    <div class="loading-container">
+        <img src="/images/NEWFULLLOGO.png" class="logo"></img>
+        <div class="loading-text">Loading</div>
+        <div class="loader"></div>
+    </div>
+
+</body>
+</html>
