@@ -386,3 +386,31 @@
             color: --text-color;
             margin: 10px 0;
         }
+
+        .title-box-blur {
+            width: 80%;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative; /* Required for pseudo-element positioning */
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgb(255, 255, 255);
+            box-shadow: 0 4px 8px rgba(71, 24, 24, 0.3);
+        }
+        
+        .title-box-blur::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url(/images/hero2.png) no-repeat center center;
+            background-size: cover;
+            filter: blur(4px);
+            border-radius: 15px;
+            z-index: -1;
+            -webkit-filter: blur(4px);
+}
