@@ -190,7 +190,6 @@ nav {
 .feature-card btn {
     margin-top: auto;
     margin-bottom: auto;
-    display: inline-block;
 }
 
 @media screen and (max-width: 1024px) {
